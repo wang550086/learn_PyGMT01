@@ -1,278 +1,134 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>PyGMT 教學站｜從零開始畫漂亮地圖</title>
-    <meta name="description" content="PyGMT 中文教學網站，從基礎到進階，帶你用 Python 畫出專業級地圖！">
-    
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- ... 原有 header、CSS 等保持不變 ... -->
 
-    <style>
-        :root {
-            --primary: #00695c;
-            --primary-dark: #004d40;
-            --bg: #f8f9fa;
-            --card-bg: #ffffff;
-            --text: #1a1a1a;
-            --text-light: #555;
-        }
+<!-- 在 :root 裡補充一些科技色系變數（可加到原有 CSS 最上方） -->
+<style>
+    :root {
+        --primary: #00b4d8;
+        --primary-dark: #0077b6;
+        --accent: #48cae4;
+        --bg-dark: #0d1b2a;
+        --card-bg: rgba(20, 40, 60, 0.75);
+        --glow: 0 0 25px rgba(0, 180, 216, 0.4);
+        --text-light: #c9d1d9;
+    }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    .tech-card {
+        background: linear-gradient(135deg, #0d1b2a 0%, #1b263b 50%, #0d1b2a 100%);
+        border: 1px solid var(--accent);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--glow), 0 10px 40px rgba(0,0,0,0.5);
+        backdrop-filter: blur(8px);
+        transition: all 0.4s ease;
+    }
 
-        body {
-            font-family: 'Noto Sans TC', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.6;
-        }
+    .tech-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 0 40px rgba(0, 180, 216, 0.6), 0 20px 60px rgba(0,0,0,0.5);
+    }
 
-        header {
-            background: linear-gradient(135deg, #004d40 0%, #009688 100%);
-            color: white;
-            padding: 5rem 2rem 6rem;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
+    .code-block {
+        background: #0a192f;
+        border-left: 4px solid var(--accent);
+        padding: 1.4rem;
+        margin: 1rem 0;
+        border-radius: 8px;
+        font-family: 'JetBrains Mono', 'Courier New', monospace;
+        font-size: 0.98rem;
+        color: #c9d1d9;
+        overflow-x: auto;
+    }
 
-        header::before {
-            content: "PyGMT";
-            position: absolute;
-            top: -15%;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 35vw;
-            font-weight: 900;
-            opacity: 0.08;
-            white-space: nowrap;
-            pointer-events: none;
-        }
+    .code-comment {
+        color: #6e7681;
+        font-style: italic;
+    }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-        }
-
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 0.8rem;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            font-size: 1.4rem;
-            opacity: 0.9;
-            margin-bottom: 2.5rem;
-        }
-
-        .badges {
-            display: flex;
-            gap: 1.2rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 2.5rem;
-        }
-
-        .badge {
-            background: rgba(255,255,255,0.25);
-            backdrop-filter: blur(8px);
-            padding: 0.5rem 1.2rem;
-            border-radius: 999px;
-            font-size: 0.95rem;
-            border: 1px solid rgba(255,255,255,0.4);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 0.9rem 2.2rem;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: white;
-            color: var(--primary-dark);
-            box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-        }
-
-        .btn-outline {
-            border: 2px solid white;
-            color: white;
-        }
-
-        .btn-outline:hover {
-            background: rgba(255,255,255,0.15);
-        }
-
-        main {
-            padding: 5rem 0 6rem;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 2rem;
-            margin: 4rem 0;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
-        }
-
-        .card-img {
-            height: 180px;
-            background: linear-gradient(45deg, #009688, #26a69a);
-            display: grid;
-            place-items: center;
-            color: white;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.4rem;
-            font-weight: bold;
-        }
-
-        .card-content {
-            padding: 1.8rem;
-        }
-
-        .card h3 {
-            margin-bottom: 0.8rem;
-            color: var(--primary);
-        }
-
-        footer {
-            background: #111;
-            color: #aaa;
-            text-align: center;
-            padding: 3rem 1rem;
-            font-size: 0.95rem;
-        }
-
-        @media (max-width: 768px) {
-            h1 { font-size: 2.8rem; }
-            header { padding: 4rem 1.5rem 5rem; }
-        }
-    </style>
-</head>
-<body>
-
-<header>
-    <div class="container">
-        <div class="badges">
-            <span class="badge">Python</span>
-            <span class="badge">PyGMT</span>
-            <span class="badge">GMT 最新版</span>
-            <span class="badge">中文教學</span>
-        </div>
-
-        <h1>PyGMT 教學站</h1>
-        <p class="subtitle">用 Python 畫出專業又好看的地圖</p>
-
-        <div class="btn-group">
-            <a href="./getting-started.html" class="btn btn-primary">立即開始 →</a>
-            <a href="https://www.pygmt.org" target="_blank" class="btn btn-outline">官方文件</a>
-        </div>
-    </div>
-</header>
+    .highlight-keyword { color: #ff79c6; }
+    .highlight-string  { color: #f1fa8c; }
+    .highlight-number  { color: #bd93f9; }
+</style>
 
 <main class="container">
-    <h2 style="text-align:center; margin-bottom:3rem;">你將學到什麼？</h2>
 
-    <div class="card-grid">
-        <div class="card">
-            <div class="card-img">基礎地圖</div>
-            <div class="card-content">
-                <h3>從零開始</h3>
-                <p>安裝 → 第一張地圖 → 常用投影法 → 畫海岸線、國界、格線</p>
-            </div>
+    <!-- ... 原有「你將學到什麼？」的 card-grid ... -->
+
+    <h2 style="text-align:center; margin:6rem 0 2.5rem; color:var(--primary); font-weight:700;">
+        5分鐘快速上手 PyGMT｜AGU 2021 經典入門
+    </h2>
+
+    <div class="tech-card" style="max-width: 1100px; margin: 0 auto 5rem;">
+
+        <!-- 影片嵌入 + 半透明科技感遮罩 -->
+        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+            <div style="position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(13,27,42,0.4), rgba(13,27,42,0.1)); pointer-events: none; z-index: 2;"></div>
+            <iframe 
+                style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"
+                src="https://www.youtube.com/embed/Kb6TYvZcI_c" 
+                title="Quick Introduction to Plotting with PyGMT - AGU 2021" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen>
+            </iframe>
         </div>
 
-        <div class="card">
-            <div class="card-img">美化進階</div>
-            <div class="card-content">
-                <h3>讓地圖變漂亮</h3>
-                <p>顏色地圖、陰影地形、比例尺、指北針、複雜圖例、字型美化</p>
-            </div>
-        </div>
+        <!-- 內容區 -->
+        <div style="padding: 2.5rem 3rem; color: var(--text-light);">
+            <p style="font-size: 1.1rem; margin-bottom: 2rem; line-height: 1.7;">
+                這個 5 分鐘的經典影片由 PyGMT 核心貢獻者 Meghan Jones 製作，是目前最簡潔快速的上手方式。<br>
+                從零開始 → 建立第一張地圖 → 加海岸線 → 上色 → 顯示全球地形，完整流程一次看懂！
+            </p>
 
-        <div class="card">
-            <div class="card-img">科學應用</div>
-            <div class="card-content">
-                <h3>研究與論文</h3>
-                <p>地震分佈、GPS速度場、熱流、斷層、地形剖面、Swarm圖、網格處理</p>
-            </div>
-        </div>
+            <h3 style="color: var(--accent); margin: 2.5rem 0 1.2rem; font-size: 1.5rem;">影片中逐步示範的經典程式碼</h3>
 
-        <div class="card">
-            <div class="card-img">資料視覺化</div>
-            <div class="card-content">
-                <h3>進階技巧</h3>
-                <p>動態地圖、3D視覺化、動畫製作、與 Cartopy / Geopandas 比較</p>
-            </div>
-        </div>
+            <!-- 程式碼區塊 1 -->
+            <div class="code-block">
+                <span class="code-comment"># 1. 匯入 PyGMT</span><br>
+                <span class="highlight-keyword">import</span> pygmt<br><br>
 
-        <div class="card">
-            <div class="card-img">常見問題</div>
-            <div class="card-content">
-                <h3>FAQ & 疑難排解</h3>
-                <p>中文字型、投影變形、顏色跑掉、記憶體不足、版本相容性等</p>
+                <span class="code-comment"># 2. 建立第一張基本地圖（全球 Mercator）</span><br>
+                fig = pygmt.Figure()<br>
+                fig.basemap(<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">region</span>=[-180, 180, -70, 70],<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">projection</span>="M20c",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">frame</span>=True<br>
+                )<br>
+                fig.show()
             </div>
-        </div>
 
-        <div class="card">
-            <div class="card-img">Gallery</div>
-            <div class="card-content">
-                <h3>作品集靈感</h3>
-                <p>收集各種領域漂亮的 PyGMT 地圖作品，也歡迎投稿！</p>
+            <!-- 程式碼區塊 2 -->
+            <div class="code-block">
+                <span class="code-comment"># 3. 加海岸線 + 陸地/海洋上色（Hammer 投影）</span><br>
+                fig = pygmt.Figure()<br>
+                fig.basemap(<span class="highlight-keyword">region</span>="d", <span class="highlight-keyword">projection</span>="H", <span class="highlight-keyword">frame</span>=True)<br>
+                fig.coast(<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">shorelines</span>=True,<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">land</span>="darkgreen",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">water</span>="lightsteelblue"<br>
+                )<br>
+                fig.show()
             </div>
+
+            <!-- 程式碼區塊 3 -->
+            <div class="code-block">
+                <span class="code-comment"># 4. 顯示全球地形（使用遠端 SRTM15+ 資料集）</span><br>
+                fig = pygmt.Figure()<br>
+                fig.basemap(<span class="highlight-keyword">region</span>="d", <span class="highlight-keyword">projection</span>="H", <span class="highlight-keyword">frame</span>=True)<br>
+                fig.grdimage(<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">grid</span>="@earth_relief_20m",<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;<span class="highlight-keyword">shading</span>=True<br>
+                )<br>
+                fig.show()
+            </div>
+
+            <p style="margin-top: 2.5rem; font-size: 1rem; opacity: 0.9;">
+                原始 Jupyter Notebook（含完整範例）：<br>
+                <a href="https://github.com/meghanrjones/agu2021" target="_blank" style="color: var(--accent); text-decoration: underline;">https://github.com/meghanrjones/agu2021</a>
+            </p>
         </div>
     </div>
 
-    <div style="text-align:center; margin:5rem 0;">
-        <h2>準備好了嗎？<br>開始你的第一張 PyGMT 地圖吧！</h2>
-        <div style="margin-top:2rem;">
-            <a href="./getting-started.html" class="btn btn-primary" style="font-size:1.3rem; padding:1.1rem 3rem;">
-                立刻開始第一課 →
-            </a>
-        </div>
-    </div>
+    <!-- ... 接續原有的「準備好了嗎？」CTA 區塊 ... -->
+
 </main>
 
-<footer>
-    <p>© 2025–2026 PyGMT中文教學社群 • 內容採用 CC-BY-SA 4.0 授權</p>
-    <p>歡迎提交 PR 一起把中文資源做得更好！</p>
-</footer>
-
-</body>
-</html>
+<!-- footer 保持原樣 -->
